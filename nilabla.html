@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="tr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nil Abla - Premium Video Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#E50914',
+                        'primary-dark': '#B8070F',
+                        netflix: '#E50914',
+                        'netflix-dark': '#B8070F'
+                    },
+                    fontFamily: {
+                        'netflix': ['Netflix Sans', 'Helvetica Neue', 'Segoe UI', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: #141414;
+            overflow-x: hidden;
+        }
+        
+        /* Netflix-style animations */
+        .hero-fade {
+            animation: heroFade 1.5s ease-out;
+        }
+        
+        @keyframes heroFade {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .video-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: center center;
+        }
+        
+        .video-card:hover {
+            transform: scale(1.05) translateY(-10px);
+            z-index: 10;
+            position: relative;
+        }
+        
+        .video-card:hover .video-overlay {
+            opacity: 1;
+        }
+        
+        .video-overlay {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .video-thumbnail {
+            background: linear-gradient(135deg, #E50914 0%, #B8070F 50%, #8B0000 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .video-thumbnail::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.8) 100%);
+            z-index: 1;
+        }
+        
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .play-button:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        
+        .play-icon {
+            width: 0;
+            height: 0;
+            border-left: 20px solid #E50914;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            margin-left: 4px;
+        }
+        
+        .category-btn {
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .category-btn.active {
+            background: linear-gradient(45deg, #E50914, #B8070F);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(229, 9, 20, 0.3);
+        }
+        
+        .category-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .search-input {
+            font-size: 16px;
+            backdrop-filter: blur(20px);
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .search-input:focus {
+            background: rgba(20, 20, 20, 0.95);
+            border-color: #E50914;
+            box-shadow: 0 0 20px rgba(229, 9, 20, 0.3);
+        }
+        
+        .hero-section {
+            background: linear-gradient(45deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(229, 9, 20, 0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+        
+        .featured-video {
+            transform: perspective(1000px) rotateY(2deg);
+            transition: transform 0.6s ease;
+        }
+        
+        .featured-video:hover {
+            transform: perspective(1000px) rotateY(0deg) scale(1.02);
+        }
+        
+        .glass-effect {
+            background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(45deg, #E50914, #FF6B6B);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 1s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .scroll-container {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+        
+        .comment-slide {
+            animation: commentSlide 0.5s ease-out;
+        }
+        
+        @keyframes commentSlide {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .notification {
+            animation: notificationSlide 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes notificationSlide {
+            from { opacity: 0; transform: translateX(100px) scale(0.8); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-black text-white min-h-full">
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 glass-effect">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3 slide-in">
+                    <div class="relative">
+                        <div class="w-10 h-10 bg-gradient-to-br from-netflix via-red-600 to-red-800 rounded-xl flex items-center justify-center shadow-lg">
+                            <span class="text-lg">🔥</span>
+                        </div>
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+                    </div>
+                    <div>
+                        <h1 class="text-lg sm:text-xl font-bold text-gradient leading-tight">
+                            <div>NIL</div>
+                            <div class="mt-[-2px]">ABLA</div>
+                        </h1>
+                    </div>
+                </div>
+                
+                <!-- Search Bar -->
+                <div class="flex-1 max-w-md mx-4 fade-in">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="searchInput"
+                            placeholder="Video ara..." 
+                            class="search-input w-full pl-10 pr-4 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-netflix text-white transition-all duration-300"
+                        >
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Video Search Button -->
+                <div class="flex items-center fade-in">
+                    <button onclick="openVideoSearchModal()" class="glass-effect p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-all duration-300 group">
+                        <svg class="w-5 h-5 text-white group-hover:text-netflix transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section relative min-h-screen flex items-center pt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 hero-fade">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="space-y-6">
+                    <h1 class="text-5xl lg:text-7xl font-bold leading-tight">
+                        En İyi <span class="text-gradient">Videolar</span><br>
+                        Burada
+                    </h1>
+                    <p class="text-xl text-gray-300 leading-relaxed">
+                        Binlerce kaliteli video içeriğini keşfedin. Eğitimden eğlenceye, teknolojiden spora her kategoride premium içerikler.
+                    </p>
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                        <button onclick="scrollToVideos()" class="px-8 py-4 bg-gradient-to-r from-netflix to-netflix-dark text-white rounded-lg hover:shadow-lg hover:shadow-netflix/50 transition-all duration-300 font-semibold text-lg">
+                            ▶ İzlemeye Başla
+                        </button>
+                        <button class="px-8 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg hover:shadow-lg hover:shadow-yellow-500/50 transition-all duration-300 font-semibold text-lg">
+                            👑 VIP Ol
+                        </button>
+                    </div>
+                </div>
+                <div class="featured-video">
+                    <div class="relative rounded-2xl overflow-hidden shadow-2xl">
+                        <div class="aspect-video bg-gradient-to-br from-netflix via-red-600 to-red-900 flex items-center justify-center">
+                            <div class="play-button">
+                                <div class="play-icon"></div>
+                            </div>
+                        </div>
+                        <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black via-black/50 to-transparent">
+                            <h3 class="text-2xl font-bold mb-2">Öne Çıkan İçerik</h3>
+                            <p class="text-gray-300">Popüler videolarımızdan birini izleyin</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories -->
+    <section id="videoSection" class="py-12 bg-gradient-to-b from-black to-gray-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Ad Banner Top -->
+            <div class="mb-8 fade-in">
+                <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl p-6 text-center text-white shadow-2xl">
+                    <div class="flex flex-col md:flex-row items-center justify-between">
+                        <div class="mb-4 md:mb-0">
+                            <h3 class="text-2xl font-bold mb-2">🚀 Süper Hızlı İnternet</h3>
+                            <p class="text-blue-100">Fiber internet ile videolarınızı kesintisiz izleyin</p>
+                        </div>
+                        <button class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-300">
+                            Hemen Başla
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-3 mb-12 fade-in">
+                <button class="category-btn active px-6 py-3 rounded-full text-white font-medium" data-category="all">
+                    🏠 Tümü
+                </button>
+                <button class="category-btn px-6 py-3 rounded-full bg-white bg-opacity-10 text-white font-medium hover:bg-opacity-20" data-category="technology">
+                    💻 Teknoloji
+                </button>
+                <button class="category-btn px-6 py-3 rounded-full bg-white bg-opacity-10 text-white font-medium hover:bg-opacity-20" data-category="education">
+                    📚 Eğitim
+                </button>
+                <button class="category-btn px-6 py-3 rounded-full bg-white bg-opacity-10 text-white font-medium hover:bg-opacity-20" data-category="entertainment">
+                    🎭 Eğlence
+                </button>
+                <button class="category-btn px-6 py-3 rounded-full bg-white bg-opacity-10 text-white font-medium hover:bg-opacity-20" data-category="music">
+                    🎵 Müzik
+                </button>
+                <button class="category-btn px-6 py-3 rounded-full bg-white bg-opacity-10 text-white font-medium hover:bg-opacity-20" data-category="sports">
+                    ⚽ Spor
+                </button>
+            </div>
+
+            <!-- Video Grid -->
+            <div id="videoGrid" class="video-grid fade-in">
+                <!-- Videolar JavaScript ile yüklenecek -->
+            </div>
+
+            <!-- Ad Banner Middle -->
+            <div class="my-12 fade-in">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-br from-green-600 to-emerald-700 rounded-2xl p-6 text-white">
+                        <div class="flex items-center space-x-4">
+                            <div class="text-4xl">📱</div>
+                            <div>
+                                <h4 class="text-xl font-bold mb-1">Mobil Uygulamayı İndir</h4>
+                                <p class="text-green-100 text-sm">Her yerden videolarınıza erişin</p>
+                            </div>
+                        </div>
+                        <button class="mt-4 bg-white text-green-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-50 transition-all duration-300">
+                            App Store
+                        </button>
+                    </div>
+                    <div class="bg-gradient-to-br from-orange-600 to-red-600 rounded-2xl p-6 text-white">
+                        <div class="flex items-center space-x-4">
+                            <div class="text-4xl">🎯</div>
+                            <div>
+                                <h4 class="text-xl font-bold mb-1">Premium Üyelik</h4>
+                                <p class="text-orange-100 text-sm">Reklamsız deneyim için</p>
+                            </div>
+                        </div>
+                        <button class="mt-4 bg-white text-orange-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-orange-50 transition-all duration-300">
+                            Üye Ol
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- More Videos Grid -->
+            <div id="moreVideosGrid" class="video-grid fade-in mt-12">
+                <!-- Daha fazla video buraya gelecek -->
+            </div>
+
+            <!-- Ad Banner Bottom -->
+            <div class="mt-12 fade-in">
+                <div class="bg-gradient-to-r from-purple-900 via-blue-900 to-indigo-900 rounded-2xl p-8 text-center text-white relative overflow-hidden">
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="4"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+                    <div class="relative z-10">
+                        <h3 class="text-3xl font-bold mb-4">🌟 En İyi Video Deneyimi</h3>
+                        <p class="text-xl mb-6 text-purple-100">4K kalitesinde, HDR destekli videolar</p>
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                            <button class="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-8 py-3 rounded-lg font-bold hover:shadow-lg hover:shadow-yellow-500/50 transition-all duration-300">
+                                🚀 Hemen Dene
+                            </button>
+                            <span class="text-purple-200">İlk 30 gün ücretsiz!</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Video Player -->
+    <div id="mainVideoSection" class="bg-black py-12" style="display: none;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Video Player -->
+                <div class="lg:col-span-2">
+                    <div class="rounded-2xl overflow-hidden shadow-2xl mb-8">
+                        <video 
+                            id="mainVideoPlayer" 
+                            class="w-full aspect-video bg-black" 
+                            controls 
+                            poster=""
+                        >
+                            <source src="" type="video/mp4">
+                            Tarayıcınız video etiketini desteklemiyor.
+                        </video>
+                    </div>
+                    
+                    <!-- Video Info -->
+                    <div class="glass-effect rounded-2xl p-8 mb-8 slide-in">
+                        <h2 id="videoTitle" class="text-3xl font-bold mb-4 text-white">Video Başlığı</h2>
+                        <div class="flex items-center text-gray-400 mb-6 space-x-4">
+                            <span id="videoViews" class="flex items-center space-x-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                <span>1.2M görüntüleme</span>
+                            </span>
+                            <span id="videoDate" class="flex items-center space-x-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>2 gün önce</span>
+                            </span>
+                        </div>
+                        <p id="videoDescription" class="text-gray-300 leading-relaxed text-lg">
+                            Video açıklaması burada görünecek...
+                        </p>
+                    </div>
+                    
+                    <!-- Comments Section -->
+                    <div class="glass-effect rounded-2xl p-8 fade-in">
+                        <div class="flex items-center justify-between mb-8">
+                            <h3 class="text-2xl font-bold text-white">
+                                <span id="commentCount">0</span> Yorum
+                            </h3>
+                        </div>
+                        
+                        <!-- Comment Form -->
+                        <div class="mb-8">
+                            <div class="space-y-4 md:space-y-0 md:flex md:space-x-4">
+                                <div class="flex-shrink-0 hidden md:block">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-netflix to-netflix-dark rounded-full flex items-center justify-center">
+                                        <span class="text-white font-bold">👤</span>
+                                    </div>
+                                </div>
+                                <div class="flex-1 space-y-4">
+                                    <textarea 
+                                        id="commentInput"
+                                        placeholder="Yorumunuzu yazın..."
+                                        class="w-full p-4 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-netflix text-white placeholder-gray-400 text-base"
+                                        rows="3"
+                                    ></textarea>
+                                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
+                                        <input 
+                                            type="text" 
+                                            id="commenterName"
+                                            placeholder="Adınız"
+                                            class="w-full sm:max-w-xs px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-lg focus:outline-none focus:ring-2 focus:ring-netflix text-white placeholder-gray-400 text-base"
+                                        >
+                                        <button 
+                                            onclick="addComment()"
+                                            class="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-netflix to-netflix-dark text-white hover:shadow-lg hover:shadow-netflix/50 rounded-lg transition-all duration-300 font-semibold"
+                                        >
+                                            💬 Yorum Yap
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Comments List -->
+                        <div id="commentsList" class="space-y-4">
+                            <!-- Yorumlar buraya gelecek -->
+                        </div>
+                        
+                        <!-- No Comments Message -->
+                        <div id="noCommentsMessage" class="text-center py-12 text-gray-400">
+                            <div class="floating">
+                                <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.96 8.96 0 01-4.64-1.281L3 21l2.279-5.36A7.954 7.954 0 013 12a8 8 0 018-8 8 8 0 018 8z"></path>
+                                </svg>
+                            </div>
+                            <p class="text-xl">Henüz yorum yapılmamış</p>
+                            <p class="text-gray-500">İlk yorumu siz yapın!</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sidebar -->
+                <div class="lg:col-span-1">
+                    <h3 class="text-xl font-bold mb-6 text-white">🔥 Önerilen Videolar</h3>
+                    <div id="suggestedVideos" class="space-y-4">
+                        <!-- Önerilen videolar buraya gelecek -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Search Modal -->
+    <div id="videoSearchModal" class="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="glass-effect rounded-2xl p-6 max-w-sm w-full mx-4 slide-in">
+            <h3 class="text-xl font-bold mb-4 text-white">🎬 Video Ara</h3>
+            <div class="space-y-4">
+                <input 
+                    type="text" 
+                    id="videoSearchInput" 
+                    placeholder="Video adı yazın..." 
+                    class="w-full p-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-netflix text-base"
+                >
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeVideoSearchModal()" class="px-4 py-2 text-gray-400 hover:text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-300">
+                        İptal
+                    </button>
+                    <button onclick="searchVideo()" class="px-4 py-2 bg-gradient-to-r from-netflix to-netflix-dark text-white hover:shadow-lg hover:shadow-netflix/50 rounded-lg transition-all duration-300 font-semibold">
+                        🔍 Ara
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode is default (Netflix style)
+        document.documentElement.classList.add('dark');
+
+        // Comments storage (per video)
+        let videoComments = {};
+        
+        let videos = [
+            {
+                id: 1,
+                title: "JavaScript'e Giriş - Temel Kavramlar",
+                description: "Bu videoda JavaScript'in temel kavramlarını öğreneceksiniz. Değişkenler, fonksiyonlar ve daha fazlası...",
+                category: "technology",
+                views: "125K",
+                date: "3 gün önce",
+                duration: "15:30",
+                url: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4"
+            },
+            {
+                id: 2,
+                title: "Modern Web Tasarımı Trendleri 2024",
+                description: "2024 yılında popüler olan web tasarım trendlerini keşfedin. Renk paleti, tipografi ve layout örnekleri.",
+                category: "technology",
+                views: "89K",
+                date: "1 hafta önce",
+                duration: "22:15",
+                url: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_2mb.mp4"
+            },
+            {
+                id: 3,
+                title: "Matematik: Türev Alma Teknikleri",
+                description: "Matematik derslerinde türev alma yöntemlerini adım adım öğrenin. Pratik örnekler ve çözümler.",
+                category: "education",
+                views: "203K",
+                date: "5 gün önce",
+                duration: "18:45",
+                url: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4"
+            },
+            {
+                id: 4,
+                title: "Komedi Skeci: Teknoloji Bağımlılığı",
+                description: "Günümüz teknoloji bağımlılığını komik bir şekilde ele alan skeci. Gülmekten öleceksiniz!",
+                category: "entertainment",
+                views: "1.2M",
+                date: "2 gün önce",
+                duration: "8:20",
+                url: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_2mb.mp4"
+            },
+            {
+                id: 5,
+                title: "Akustik Gitar Dersi - Temel Akorlar",
+                description: "Akustik gitar çalmaya başlayanlar için temel akor çalışmaları ve parmak pozisyonları.",
+                category: "music",
+                views: "76K",
+                date: "4 gün önce",
+                duration: "25:10",
+                url: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4"
+            },
+            {
+                id: 6,
+                title: "Futbol Skill Hareketleri",
+                description: "Profesyonel futbolcuların kullandığı skill hareketlerini öğrenin ve sahada fark yaratın.",
+                category: "sports",
+                views: "156K",
+                date: "6 gün önce",
+                duration: "12:35",
+                url: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_2mb.mp4"
+            }
+        ];
+
+        let filteredVideos = [...videos];
+        let currentVideo = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderVideos();
+            setupEventListeners();
+            animateOnScroll();
+        });
+
+        function setupEventListeners() {
+            // Search
+            document.getElementById('searchInput').addEventListener('input', handleSearch);
+            
+            // Category buttons
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => handleCategoryFilter(btn));
+            });
+        }
+
+        function animateOnScroll() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.video-card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'all 0.6s ease';
+                observer.observe(card);
+            });
+        }
+
+        function scrollToVideos() {
+            document.getElementById('videoSection').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        function handleSearch(e) {
+            const query = e.target.value.toLowerCase();
+            filteredVideos = videos.filter(video => 
+                video.title.toLowerCase().includes(query) ||
+                video.description.toLowerCase().includes(query)
+            );
+            renderVideos();
+        }
+
+        function handleCategoryFilter(button) {
+            // Update active button
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            const category = button.dataset.category;
+            if (category === 'all') {
+                filteredVideos = [...videos];
+            } else {
+                filteredVideos = videos.filter(video => video.category === category);
+            }
+            renderVideos();
+        }
+
+        function renderVideos() {
+            const grid = document.getElementById('videoGrid');
+            grid.innerHTML = '';
+
+            filteredVideos.forEach((video, index) => {
+                const videoCard = createVideoCard(video, index);
+                grid.appendChild(videoCard);
+            });
+
+            // Re-animate cards
+            setTimeout(() => {
+                animateOnScroll();
+            }, 100);
+        }
+
+        function createVideoCard(video, index) {
+            const card = document.createElement('div');
+            card.className = 'video-card glass-effect rounded-xl overflow-hidden cursor-pointer';
+            card.style.animationDelay = `${index * 0.1}s`;
+            card.onclick = () => playVideo(video);
+
+            card.innerHTML = `
+                <div class="video-thumbnail aspect-video relative">
+                    <div class="play-button">
+                        <div class="play-icon"></div>
+                    </div>
+                    <div class="absolute bottom-3 right-3 bg-black bg-opacity-80 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
+                        ${video.duration}
+                    </div>
+                    <div class="video-overlay absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent flex items-end p-4">
+                        <div class="text-white">
+                            <h4 class="font-bold text-lg mb-1">${video.title}</h4>
+                            <p class="text-sm opacity-90">${video.views} görüntüleme</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <h3 class="font-bold text-white mb-2 line-clamp-2 leading-tight">
+                        ${video.title}
+                    </h3>
+                    <p class="text-sm text-gray-400 mb-3 line-clamp-2">
+                        ${video.description.substring(0, 100)}...
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-gray-500">
+                        <span class="flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                            <span>${video.views}</span>
+                        </span>
+                        <span>${video.date}</span>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function playVideo(video) {
+            currentVideo = video;
+            startVideo();
+        }
+
+        function startVideo() {
+            if (!currentVideo) return;
+            
+            // Update main video player
+            const player = document.getElementById('mainVideoPlayer');
+            const title = document.getElementById('videoTitle');
+            const views = document.getElementById('videoViews');
+            const date = document.getElementById('videoDate');
+            const description = document.getElementById('videoDescription');
+            
+            player.src = currentVideo.url;
+            title.textContent = currentVideo.title;
+            views.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+                <span>${currentVideo.views} görüntüleme</span>
+            `;
+            date.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>${currentVideo.date}</span>
+            `;
+            description.textContent = currentVideo.description;
+            
+            // Show main video section
+            document.getElementById('mainVideoSection').style.display = 'block';
+            
+            // Generate suggested videos
+            renderSuggestedVideos();
+            
+            // Load comments for this video
+            loadComments();
+            
+            // Scroll to video
+            document.getElementById('mainVideoSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderSuggestedVideos() {
+            const container = document.getElementById('suggestedVideos');
+            container.innerHTML = '';
+            
+            const suggested = videos.filter(v => v.id !== currentVideo.id).slice(0, 5);
+            
+            suggested.forEach(video => {
+                const item = document.createElement('div');
+                item.className = 'flex space-x-3 cursor-pointer hover:bg-white hover:bg-opacity-10 p-3 rounded-xl transition-all duration-300 glass-effect';
+                item.onclick = () => playVideo(video);
+                
+                item.innerHTML = `
+                    <div class="video-thumbnail w-32 h-20 rounded-lg flex-shrink-0 relative overflow-hidden">
+                        <div class="play-button" style="width: 30px; height: 30px;">
+                            <div style="border-left: 10px solid #E50914; border-top: 6px solid transparent; border-bottom: 6px solid transparent; margin-left: 2px;"></div>
+                        </div>
+                        <div class="absolute bottom-1 right-1 bg-black bg-opacity-80 text-white text-xs px-1 rounded">
+                            ${video.duration}
+                        </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-semibold text-sm text-white line-clamp-2 mb-1">
+                            ${video.title}
+                        </h4>
+                        <p class="text-xs text-gray-400">
+                            ${video.views} görüntüleme • ${video.date}
+                        </p>
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+
+        function openVideoSearchModal() {
+            document.getElementById('videoSearchModal').classList.remove('hidden');
+            document.getElementById('videoSearchModal').classList.add('flex');
+            document.getElementById('videoSearchInput').focus();
+        }
+
+        function closeVideoSearchModal() {
+            document.getElementById('videoSearchModal').classList.add('hidden');
+            document.getElementById('videoSearchModal').classList.remove('flex');
+            document.getElementById('videoSearchInput').value = '';
+        }
+
+        function searchVideo() {
+            const query = document.getElementById('videoSearchInput').value.trim();
+            if (!query) {
+                showNotification('⚠️ Lütfen arama terimi girin!', 'error');
+                return;
+            }
+            
+            // Normal arama fonksiyonunu kullan
+            document.getElementById('searchInput').value = query;
+            handleSearch({ target: { value: query } });
+            
+            // Modal'ı kapat
+            closeVideoSearchModal();
+            
+            // Video bölümüne scroll yap
+            scrollToVideos();
+            
+            showNotification(`🔍 "${query}" için arama yapıldı!`, 'success');
+        }
+
+        function addVideo() {
+            const url = document.getElementById('videoUrlInput').value;
+            const title = document.getElementById('videoTitleInput').value;
+            
+            if (!url || !title) {
+                showNotification('⚠️ Lütfen tüm alanları doldurun!', 'error');
+                return;
+            }
+            
+            const newVideo = {
+                id: videos.length + 1,
+                title: title,
+                description: "Kullanıcı tarafından eklenen video",
+                category: "technology",
+                views: "0",
+                date: "Şimdi",
+                duration: "0:00",
+                url: url
+            };
+            
+            videos.unshift(newVideo);
+            filteredVideos = [...videos];
+            renderVideos();
+            closeUploadModal();
+            
+            showNotification('✅ Video başarıyla eklendi!', 'success');
+        }
+
+        function addComment() {
+            const commentText = document.getElementById('commentInput').value.trim();
+            const commenterName = document.getElementById('commenterName').value.trim() || 'Anonim';
+            
+            if (!commentText) {
+                showNotification('⚠️ Lütfen bir yorum yazın!', 'error');
+                return;
+            }
+            
+            if (!currentVideo) {
+                showNotification('⚠️ Önce bir video seçin!', 'error');
+                return;
+            }
+            
+            // Initialize comments array for this video if it doesn't exist
+            if (!videoComments[currentVideo.id]) {
+                videoComments[currentVideo.id] = [];
+            }
+            
+            // Create new comment
+            const newComment = {
+                id: Date.now(),
+                text: commentText,
+                author: commenterName,
+                date: new Date().toLocaleString('tr-TR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+            };
+            
+            // Add comment to the beginning of the array (newest first)
+            videoComments[currentVideo.id].unshift(newComment);
+            
+            // Clear form
+            document.getElementById('commentInput').value = '';
+            document.getElementById('commenterName').value = '';
+            
+            // Reload comments
+            loadComments();
+            
+            showNotification('💬 Yorumunuz eklendi!', 'success');
+        }
+        
+        function loadComments() {
+            if (!currentVideo) return;
+            
+            const commentsList = document.getElementById('commentsList');
+            const noCommentsMessage = document.getElementById('noCommentsMessage');
+            const commentCount = document.getElementById('commentCount');
+            
+            const comments = videoComments[currentVideo.id] || [];
+            
+            // Update comment count
+            commentCount.textContent = comments.length;
+            
+            if (comments.length === 0) {
+                commentsList.style.display = 'none';
+                noCommentsMessage.style.display = 'block';
+                return;
+            }
+            
+            commentsList.style.display = 'block';
+            noCommentsMessage.style.display = 'none';
+            
+            // Render comments
+            commentsList.innerHTML = '';
+            comments.forEach(comment => {
+                const commentElement = createCommentElement(comment);
+                commentsList.appendChild(commentElement);
+            });
+        }
+        
+        function createCommentElement(comment) {
+            const commentDiv = document.createElement('div');
+            commentDiv.className = 'flex space-x-4 p-4 bg-white bg-opacity-5 rounded-xl comment-slide';
+            
+            commentDiv.innerHTML = `
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-gradient-to-br from-netflix to-netflix-dark rounded-full flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">${comment.author.charAt(0).toUpperCase()}</span>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <h4 class="font-bold text-white text-sm">${comment.author}</h4>
+                        <span class="text-xs text-gray-400">${comment.date}</span>
+                    </div>
+                    <p class="text-gray-300 text-sm leading-relaxed">${comment.text}</p>
+                </div>
+            `;
+            
+            return commentDiv;
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            const bgColor = type === 'success' ? 'from-green-500 to-green-600' : 'from-red-500 to-red-600';
+            
+            notification.className = `fixed top-20 right-4 bg-gradient-to-r ${bgColor} text-white px-6 py-4 rounded-xl shadow-2xl z-50 notification max-w-sm`;
+            notification.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <span class="text-lg">${type === 'success' ? '✅' : '⚠️'}</span>
+                    <span class="font-medium">${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100px) scale(0.8)';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('uploadModal');
+                if (!modal.classList.contains('hidden')) {
+                    closeUploadModal();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
