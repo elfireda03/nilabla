@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="tr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nil Abla - Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Firebase SDK - Storage eklendi -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#E50914',
+                        'primary-dark': '#B8070F',
+                        netflix: '#E50914',
+                        'netflix-dark': '#B8070F'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: #141414;
+            overflow-x: hidden;
+        }
+        
+        .glass-effect {
+            background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(45deg, #E50914, #FF6B6B);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .sidebar-item {
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-item:hover {
+            background: rgba(229, 9, 20, 0.1);
+            border-left: 4px solid #E50914;
+        }
+        
+        .sidebar-item.active {
+            background: rgba(229, 9, 20, 0.2);
+            border-left: 4px solid #E50914;
+        }
+        
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.6s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .table-row {
+            transition: all 0.2s ease;
+        }
+
+        .table-row:hover {
+            background: rgba(229, 9, 20, 0.05);
+        }
+
+        .action-btn {
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(229, 9, 20, 0.5);
+            border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(229, 9, 20, 0.7);
+        }
+
+        .login-container {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(229, 9, 20, 0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        /* File Upload Styles */
+        .upload-area {
+            border: 2px dashed #4B5563;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area.drag-over {
+            border-color: #E50914;
+            background-color: rgba(229, 9, 20, 0.1);
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: linear-gradient(90deg, #E50914, #FF6B6B);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .video-preview {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 8px;
+        }
+
+        .toggle-button {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #374151;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-button.active {
+            background: #E50914;
+        }
+
+        .toggle-button::after {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+
+        .toggle-button.active::after {
+            transform: translateX(30px);
+        }
+    </style>
+</head>
+<body class="bg-black text-white min-h-full">
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="fixed inset-0 bg-black flex items-center justify-center z-50">
+        <div class="text-center">
+            <div class="w-16 h-16 border-4 border-netflix border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-white">Database bağlantısı kuruluyor...</p>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="hidden login-container min-h-screen flex items-center justify-center">
+        <div class="glass-effect rounded-2xl p-8 w-full max-w-md mx-4 slide-in">
+            <div class="text-center mb-8">
+                <div class="flex items-center justify-center space-x-3 mb-4">
+                    <div class="relative">
+                        <div class="w-12 h-12 bg-gradient-to-br from-netflix via-red-600 to-red-800 rounded-xl flex items-center justify-center shadow-lg">
+                            <span class="text-2xl">🔥</span>
+                        </div>
+                        <div class="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 rounded-full animate-pulse"></div>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gradient leading-tight">
+                            <div>NIL</div>
+                            <div class="mt-[-4px]">ABLA</div>
+                        </h1>
+                    </div>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-2">Admin Panel</h2>
+                <p class="text-gray-400">Giriş yapın</p>
+            </div>
+
+            <div class="space-y-6 relative z-10">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Kullanıcı Adı</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        class="w-full p-4 bg-gray-900 border-2 border-gray-600 rounded-lg text-white text-base focus:outline-none focus:border-red-500 focus:bg-gray-800" 
+                        placeholder="admin" 
+                        style="position: relative; z-index: 20;"
+                        autocomplete="username"
+                    >
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Şifre</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        class="w-full p-4 bg-gray-900 border-2 border-gray-600 rounded-lg text-white text-base focus:outline-none focus:border-red-500 focus:bg-gray-800" 
+                        placeholder="admin123"
+                        style="position: relative; z-index: 20;"
+                        autocomplete="current-password"
+                    >
+                </div>
+                <button onclick="handleLogin()" class="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-300 font-semibold text-lg">
+                    🔐 Giriş Yap
+                </button>
+                
+                <div class="text-center">
+                    <button onclick="quickLogin()" class="px-6 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded text-sm">
+                        ⚡ Hızlı Giriş (admin/admin123)
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-8 p-4 glass-effect rounded-lg">
+                <h3 class="text-sm font-semibold text-white mb-3">Demo Hesaplar:</h3>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between">
+                        <span class="text-yellow-400">👑 Admin:</span>
+                        <span class="text-gray-300">admin / admin123</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="hidden">
+        <!-- Mobile Overlay -->
+        <div id="mobileOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden"></div>
+        
+        <div class="flex h-screen">
+            <!-- Sidebar -->
+            <aside id="sidebar" class="w-64 glass-effect fixed h-full z-30 custom-scrollbar overflow-y-auto transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+                <div class="p-6">
+                    <!-- Logo -->
+                    <div class="flex items-center space-x-3 mb-8 slide-in">
+                        <div class="relative">
+                            <div class="w-10 h-10 bg-gradient-to-br from-netflix via-red-600 to-red-800 rounded-xl flex items-center justify-center shadow-lg">
+                                <span class="text-lg">🔥</span>
+                            </div>
+                            <div class="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+                        </div>
+                        <div>
+                            <h1 class="text-lg font-bold text-gradient leading-tight">
+                                <div>NIL</div>
+                                <div class="mt-[-2px]">ABLA</div>
+                            </h1>
+                            <p class="text-xs text-gray-400">Admin Panel</p>
+                        </div>
+                    </div>
+
+                    <!-- Navigation -->
+                    <nav class="space-y-2" id="navigation">
+                        <a href="#" onclick="showSection('dashboard')" class="sidebar-item active flex items-center space-x-3 p-3 rounded-lg text-white">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="#" onclick="showSection('videos')" class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-300 hover:text-white">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                            <span>Video Yönetimi</span>
+                        </a>
+                        <a href="#" onclick="showSection('moderators')" class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-300 hover:text-white">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                            </svg>
+                            <span>Moderatörler</span>
+                        </a>
+                        <a href="#" onclick="showSection('comments')" class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-300 hover:text-white">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.96 8.96 0 01-4.64-1.281L3 21l2.279-5.36A7.954 7.954 0 013 12a8 8 0 018-8 8 8 0 018 8z"></path>
+                            </svg>
+                            <span>Yorumlar</span>
+                        </a>
+                        <a href="#" onclick="showSection('analytics')" class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-300 hover:text-white">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            <span>Analitik</span>
+                        </a>
+                        <a href="#" onclick="showSection('settings')" class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-300 hover:text-white">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <span>Ayarlar</span>
+                        </a>
+                    </nav>
+                </div>
+
+                <!-- User Info -->
+                <div class="absolute bottom-0 left-0 right-0 p-6 glass-effect">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div id="userAvatar" class="w-10 h-10 bg-gradient-to-br from-netflix to-netflix-dark rounded-full flex items-center justify-center">
+                                <span class="text-white font-bold text-sm">A</span>
+                            </div>
+                            <div>
+                                <p id="userName" class="text-white font-medium text-sm">Admin</p>
+                                <p id="userRole" class="text-gray-400 text-xs">Süper Admin</p>
+                            </div>
+                        </div>
+                        <button onclick="logout()" class="text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-1 lg:ml-64 custom-scrollbar overflow-y-auto">
+                <!-- Header -->
+                <header class="glass-effect sticky top-0 z-20 p-4 lg:p-6">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center space-x-4">
+                            <!-- Hamburger Menu Button -->
+                            <button onclick="toggleSidebar()" class="lg:hidden p-2 glass-effect rounded-lg hover:bg-white hover:bg-opacity-10 transition-all duration-300">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                                </svg>
+                            </button>
+                            <div>
+                                <h1 id="pageTitle" class="text-xl lg:text-2xl font-bold text-white">Dashboard</h1>
+                                <p id="pageSubtitle" class="text-gray-400 text-sm hidden sm:block">Platform istatistikleri ve canlı veriler</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <button class="p-2 glass-effect rounded-lg hover:bg-white hover:bg-opacity-10 transition-all duration-300">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5-5-5h5v-5a2 2 0 00-2-2H6"></path>
+                                </svg>
+                            </button>
+                            <button class="p-2 glass-effect rounded-lg hover:bg-white hover:bg-opacity-10 transition-all duration-300 relative">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5-5-5h5v-5a2 2 0 00-2-2H6"></path>
+                                </svg>
+                                <div class="absolute -top-1 -right-1 w-3 h-3 bg-netflix rounded-full animate-pulse"></div>
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Dashboard Content -->
+                <div id="dashboard" class="section-content p-6">
+                    <!-- Live Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="stat-card glass-effect rounded-2xl p-6 fade-in">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-400 text-sm mb-1">Toplam Video</p>
+                                    <p class="text-3xl font-bold text-white" id="totalVideosCount">0</p>
+                                    <p class="text-green-400 text-sm">📈 Canlı veriler</p>
+                                </div>
+                                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center floating">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card glass-effect rounded-2xl p-6 fade-in" style="animation-delay: 0.1s">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-400 text-sm mb-1">Toplam İzlenme</p>
+                                    <p class="text-3xl font-bold text-white" id="totalViewsCount">0</p>
+                                    <p class="text-blue-400 text-sm">👁️ Görüntüleme</p>
+                                </div>
+                                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center floating">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card glass-effect rounded-2xl p-6 fade-in" style="animation-delay: 0.2s">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-400 text-sm mb-1">Öne Çıkan</p>
+                                    <p class="text-3xl font-bold text-white" id="featuredVideosCount">0</p>
+                                    <p class="text-yellow-400 text-sm">⭐ Özel İçerik</p>
+                                </div>
+                                <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center floating">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card glass-effect rounded-2xl p-6 fade-in" style="animation-delay: 0.3s">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-400 text-sm mb-1">Son Güncelleme</p>
+                                    <p class="text-lg font-bold text-white" id="lastUpdateTime">-</p>
+                                    <p class="text-green-400 text-sm">🔄 Real-time</p>
+                                </div>
+                                <div class="w-12 h-12 bg-gradient-to-br from-netflix to-netflix-dark rounded-xl flex items-center justify-center floating">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <div class="glass-effect rounded-2xl p-6 fade-in">
+                            <h3 class="text-lg font-semibold text-white mb-4">Kategori Dağılımı</h3>
+                            <canvas id="categoryChart" width="400" height="200"></canvas>
+                        </div>
+                        <div class="glass-effect rounded-2xl p-6 fade-in">
+                            <h3 class="text-lg font-semibold text-white mb-4">En Çok İzlenen Videolar</h3>
+                            <div id="topVideos" class="space-y-3">
+                                <!-- Top videos will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activities -->
+                    <div class="glass-effect rounded-2xl p-6 fade-in">
+                        <h3 class="text-lg font-semibold text-white mb-4">Son Aktiviteler</h3>
+                        <div class="space-y-4" id="recentActivities">
+                            <!-- Activities will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Management Content -->
+                <div id="videos" class="section-content p-6" style="display: none;">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+                        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                            <button onclick="openAddVideoModal()" class="px-6 py-3 bg-gradient-to-r from-netflix to-netflix-dark text-white rounded-lg hover:shadow-lg hover:shadow-netflix/50 transition-all duration-300 font-semibold">
+                                + Yeni Video Ekle
+                            </button>
+                            <select id="videoFilter" onchange="filterVideos()" class="px-4 py-3 glass-effect rounded-lg text-white text-base focus:outline-none focus:ring-2 focus:ring-netflix">
+                                <option value="">Tüm Kategoriler</option>
+                                <option value="technology">Teknoloji</option>
+                                <option value="education">Eğitim</option>
+                                <option value="entertainment">Eğlence</option>
+                                <option value="music">Müzik</option>
+                                <option value="sports">Spor</option>
+                            </select>
+                        </div>
+                        <div class="relative">
+                            <input type="text" id="videoSearch" onkeyup="searchVideos()" placeholder="Video ara..." class="pl-10 pr-4 py-3 glass-effect rounded-lg text-white text-base focus:outline-none focus:ring-2 focus:ring-netflix w-full sm:w-64">
+                            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Videos Table -->
+                    <div class="glass-effect rounded-2xl overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-white bg-opacity-5">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Video</th>
+                                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Kategori</th>
+                                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">İzlenme</th>
+                                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Tarih</th>
+                                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="videosTableBody" class="divide-y divide-white divide-opacity-10">
+                                    <!-- Videos will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other admin sections -->
+                <div id="moderators" class="section-content p-6" style="display: none;">
+                    <h2 class="text-2xl font-bold text-white mb-6">👤 Moderatör Yönetimi</h2>
+                    <div class="glass-effect rounded-2xl p-6">
+                        <p class="text-gray-400">Moderatör yönetimi özellikleri burada geliştirilecek...</p>
+                    </div>
+                </div>
+
+                <div id="comments" class="section-content p-6" style="display: none;">
+                    <h2 class="text-2xl font-bold text-white mb-6">💬 Yorum Yönetimi</h2>
+                    <div class="glass-effect rounded-2xl p-6">
+                        <p class="text-gray-400">Yorum moderasyonu özellikleri burada geliştirilecek...</p>
+                    </div>
+                </div>
+
+                <div id="analytics" class="section-content p-6" style="display: none;">
+                    <h2 class="text-2xl font-bold text-white mb-6">📊 Analitik Raporları</h2>
+                    <div class="glass-effect rounded-2xl p-6">
+                        <p class="text-gray-400">Detaylı analitik raporları burada geliştirilecek...</p>
+                    </div>
+                </div>
+
+                <div id="settings" class="section-content p-6" style="display: none;">
+                    <h2 class="text-2xl font-bold text-white mb-6">⚙️ Sistem Ayarları</h2>
+                    <div class="glass-effect rounded-2xl p-6">
+                        <p class="text-gray-400">Sistem ayarları burada geliştirilecek...</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Enhanced Add Video Modal -->
+    <div id="addVideoModal" class="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="glass-effect rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <h3 class="text-3xl font-bold mb-6 text-white flex items-center">
+                <span class="mr-3">📹</span>
+                Yeni Video Ekle
+            </h3>
+            
+            <!-- Video Source Toggle -->
+            <div class="mb-6 flex items-center space-x-4">
+                <span class="text-white font-medium">Video Kaynağı:</span>
+                <div class="flex bg-gray-800 rounded-lg p-1">
+                    <button id="urlSourceBtn" onclick="switchVideoSource('url')" class="px-4 py-2 rounded-md text-white bg-netflix transition-colors">
+                        🔗 URL ile
+                    </button>
+                    <button id="fileSourceBtn" onclick="switchVideoSource('file')" class="px-4 py-2 rounded-md text-gray-400 hover:text-white transition-colors">
+                        📁 Dosya Yükle
+                    </button>
+                </div>
+            </div>
+
+            <form id="addVideoForm">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Left Column -->
+                    <div class="space-y-6">
+                        <!-- Basic Info -->
+                        <div class="space-y-4">
+                            <h4 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">📝 Temel Bilgiler</h4>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Video Başlığı *</label>
+                                <input type="text" name="title" placeholder="Örn: JavaScript Temelleri" 
+                                       class="w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-netflix" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Video Açıklaması</label>
+                                <textarea name="description" placeholder="Video hakkında detaylı açıklama..." rows="4" 
+                                          class="w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-netflix resize-none"></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Kategori *</label>
+                                <select name="category" class="w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-netflix" required>
+                                    <option value="">Kategori Seçin</option>
+                                    <option value="technology">🖥️ Teknoloji</option>
+                                    <option value="education">📚 Eğitim</option>
+                                    <option value="entertainment">🎬 Eğlence</option>
+                                    <option value="music">🎵 Müzik</option>
+                                    <option value="sports">⚽ Spor</option>
+                                    <option value="lifestyle">🌟 Yaşam</option>
+                                    <option value="cooking">🍳 Yemek</option>
+                                    <option value="travel">✈️ Seyahat</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Video Süresi</label>
+                                <input type="text" name="duration" placeholder="Örn: 15:30" 
+                                       class="w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-netflix">
+                                <p class="text-xs text-gray-500 mt-1">Format: dakika:saniye (örn: 5:30 veya 1:15:45)</p>
+                            </div>
+                        </div>
+
+                        <!-- Settings -->
+                        <div class="space-y-4">
+                            <h4 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">⚙️ Ayarlar</h4>
+                            
+                            <div class="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
+                                <div>
+                                    <span class="text-white font-medium">⭐ Öne Çıkan Video</span>
+                                    <p class="text-sm text-gray-400">Ana sayfada öne çıkarılsın</p>
+                                </div>
+                                <div class="toggle-button" id="featuredToggle" onclick="toggleSetting('featured')">
+                                </div>
+                                <input type="hidden" name="featured" id="featuredInput" value="false">
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
+                                <div>
+                                    <span class="text-white font-medium">💎 Premium İçerik</span>
+                                    <p class="text-sm text-gray-400">Özel kullanıcılar için</p>
+                                </div>
+                                <div class="toggle-button" id="premiumToggle" onclick="toggleSetting('premium')">
+                                </div>
+                                <input type="hidden" name="premium" id="premiumInput" value="false">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="space-y-6">
+                        <!-- Video Source -->
+                        <div class="space-y-4">
+                            <h4 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">🎬 Video Kaynağı</h4>
+                            
+                            <!-- URL Input -->
+                            <div id="urlSource">
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Video URL *</label>
+                                <input type="url" name="videoUrl" placeholder="https://youtube.com/watch?v=..." 
+                                       class="w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-netflix">
+                                <p class="text-xs text-gray-500 mt-1">YouTube, Vimeo, Dailymotion veya direkt video linki</p>
+                            </div>
+
+                            <!-- File Upload -->
+                            <div id="fileSource" style="display: none;">
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Video Dosyası *</label>
+                                <div class="upload-area p-8 rounded-lg text-center" id="videoUploadArea">
+                                    <input type="file" id="videoFile" accept="video/*" class="hidden" onchange="handleVideoFile(this)">
+                                    <div id="uploadContent">
+                                        <div class="text-4xl mb-4">📹</div>
+                                        <p class="text-white font-medium mb-2">Video dosyasını seçin veya sürükleyin</p>
+                                        <p class="text-sm text-gray-400 mb-4">MP4, MOV, AVI, WebM formatları desteklenir</p>
+                                        <button type="button" onclick="document.getElementById('videoFile').click()" 
+                                                class="px-6 py-2 bg-netflix text-white rounded-lg hover:bg-netflix-dark transition-colors">
+                                            📁 Dosya Seç
+                                        </button>
+                                        <p class="text-xs text-gray-500 mt-2">Maksimum: 100MB</p>
+                                    </div>
+                                    
+                                    <!-- Upload Progress -->
+                                    <div id="uploadProgress" style="display: none;">
+                                        <div class="mb-4">
+                                            <div class="flex justify-between text-sm text-gray-300 mb-1">
+                                                <span>Yükleniyor...</span>
+                                                <span id="progressPercent">0%</span>
+                                            </div>
+                                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                                <div class="progress-bar h-2 rounded-full" id="progressBar" style="width: 0%"></div>
+                                            </div>
+                                        </div>
+                                        <p class="text-sm text-gray-400" id="uploadStatus">Dosya yükleniyor...</p>
+                                    </div>
+
+                                    <!-- Video Preview -->
+                                    <div id="videoPreviewContainer" style="display: none;">
+                                        <video id="videoPreview" class="video-preview mx-auto mb-4" controls></video>
+                                        <p class="text-sm text-green-400" id="videoFileName"></p>
+                                        <button type="button" onclick="removeVideoFile()" 
+                                                class="mt-2 px-4 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700">
+                                            🗑️ Kaldır
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Thumbnail -->
+                        <div class="space-y-4">
+                            <h4 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">🖼️ Kapak Resmi</h4>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Thumbnail URL</label>
+                                <input type="url" name="thumbnail" placeholder="https://example.com/image.jpg" 
+                                       class="w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-netflix">
+                                <p class="text-xs text-gray-500 mt-1">Boş bırakılırsa otomatik oluşturulur</p>
+                            </div>
+
+                            <!-- Thumbnail Upload -->
+                            <div class="upload-area p-4 rounded-lg text-center" id="thumbnailUploadArea">
+                                <input type="file" id="thumbnailFile" accept="image/*" class="hidden" onchange="handleThumbnailFile(this)">
+                                <div id="thumbnailUploadContent">
+                                    <div class="text-2xl mb-2">🖼️</div>
+                                    <p class="text-white text-sm mb-2">Kapak resmi yükle</p>
+                                    <button type="button" onclick="document.getElementById('thumbnailFile').click()" 
+                                            class="px-4 py-1 bg-gray-700 text-white rounded text-sm hover:bg-gray-600">
+                                        Resim Seç
+                                    </button>
+                                </div>
+                                
+                                <div id="thumbnailPreviewContainer" style="display: none;">
+                                    <img id="thumbnailPreview" class="w-32 h-20 object-cover rounded mx-auto mb-2">
+                                    <button type="button" onclick="removeThumbnailFile()" 
+                                            class="px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700">
+                                        Kaldır
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Info -->
+                        <div class="space-y-4">
+                            <h4 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">ℹ️ Ek Bilgiler</h4>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Etiketler</label>
+                                <input type="text" name="tags" placeholder="javascript, tutorial, programlama" 
+                                       class="w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-netflix">
+                                <p class="text-xs text-gray-500 mt-1">Virgülle ayırarak yazın</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-600">
+                    <button type="button" onclick="closeAddVideoModal()" 
+                            class="px-6 py-3 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
+                        ❌ İptal
+                    </button>
+                    <button type="submit" id="submitBtn"
+                            class="px-8 py-3 bg-gradient-to-r from-netflix to-netflix-dark text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
+                        ✅ Video Ekle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ===== FIREBASE CONFIG =====
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDP3vp-FZ1IJf6-wQcyPwlDTItj5BGOzk",
+            authDomain: "nil-abla.firebaseapp.com",
+            databaseURL: "https://nil-abla-default-rtdb.firebaseio.com/",
+            projectId: "nil-abla",
+            storageBucket: "nil-abla.firebasestorage.app",
+            messagingSenderId: "504661076811",
+            appId: "1:504661076811:web:4552ded6a7322b2cfa16ce",
+            measurementId: "G-HZ8EF2BPWW"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const storage = firebase.storage();
+        const auth = firebase.auth();
+        const analytics = firebase.analytics();
+
+        console.log('🔥 Firebase initialized successfully!');
+        console.log('📊 Analytics enabled');
+        console.log('🗄️ Database URL:', firebaseConfig.databaseURL);
+        console.log('📦 Storage Bucket:', firebaseConfig.storageBucket);
+
+        let currentUser = null;
+        let videosData = {};
+        let uploadedVideoUrl = null;
+        let uploadedThumbnailUrl = null;
+
+        // ===== AUTHENTICATION =====
+        function handleLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === 'admin' && password === 'admin123') {
+                currentUser = { username: 'admin', name: 'Admin' };
+                showAdminPanel();
+                showNotification('✅ Giriş başarılı!', 'success');
+            } else {
+                showNotification('❌ Hatalı giriş bilgileri!', 'error');
+            }
+        }
+
+        function quickLogin() {
+            document.getElementById('username').value = 'admin';
+            document.getElementById('password').value = 'admin123';
+            handleLogin();
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            showNotification('👋 Çıkış yapıldı!', 'info');
+        }
+
+        function showAdminPanel() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            loadVideos();
+        }
+
+        // ===== VIDEO SOURCE TOGGLE =====
+        function switchVideoSource(source) {
+            const urlBtn = document.getElementById('urlSourceBtn');
+            const fileBtn = document.getElementById('fileSourceBtn');
+            const urlSource = document.getElementById('urlSource');
+            const fileSource = document.getElementById('fileSource');
+            const videoUrlInput = document.querySelector('input[name="videoUrl"]');
+
+            if (source === 'url') {
+                urlBtn.classList.add('bg-netflix', 'text-white');
+                urlBtn.classList.remove('text-gray-400');
+                fileBtn.classList.remove('bg-netflix', 'text-white');
+                fileBtn.classList.add('text-gray-400');
+                
+                urlSource.style.display = 'block';
+                fileSource.style.display = 'none';
+                videoUrlInput.required = true;
+                
+                resetVideoUpload();
+            } else {
+                fileBtn.classList.add('bg-netflix', 'text-white');
+                fileBtn.classList.remove('text-gray-400');
+                urlBtn.classList.remove('bg-netflix', 'text-white');
+                urlBtn.classList.add('text-gray-400');
+                
+                urlSource.style.display = 'none';
+                fileSource.style.display = 'block';
+                videoUrlInput.required = false;
+                videoUrlInput.value = '';
+            }
+        }
+
+        // ===== TOGGLE SETTINGS =====
+        function toggleSetting(setting) {
+            const toggle = document.getElementById(setting + 'Toggle');
+            const input = document.getElementById(setting + 'Input');
+            
+            toggle.classList.toggle('active');
+            const isActive = toggle.classList.contains('active');
+            input.value = isActive ? 'true' : 'false';
+        }
+
+        // ===== FILE UPLOAD HANDLERS =====
+        function handleVideoFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            console.log('File info:', {
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                sizeMB: (file.size / 1024 / 1024).toFixed(2) + ' MB'
+            });
+
+            if (!file.type.startsWith('video/')) {
+                showNotification('❌ Lütfen geçerli bir video dosyası seçin!', 'error');
+                return;
+            }
+
+            const maxSize = 100 * 1024 * 1024; // 100MB
+            if (file.size > maxSize) {
+                showNotification('❌ Video dosyası 100MB\'den küçük olmalıdır!', 'error');
+                return;
+            }
+
+            if (file.size === 0) {
+                showNotification('❌ Dosya boş görünüyor!', 'error');
+                return;
+            }
+
+            showVideoPreview(file);
+            uploadVideoToStorage(file);
+        }
+
+        function handleThumbnailFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                showNotification('❌ Lütfen geçerli bir resim dosyası seçin!', 'error');
+                return;
+            }
+
+            showThumbnailPreview(file);
+            uploadThumbnailToStorage(file);
+        }
+
+        function showVideoPreview(file) {
+            const preview = document.getElementById('videoPreview');
+            const container = document.getElementById('videoPreviewContainer');
+            const fileName = document.getElementById('videoFileName');
+            const uploadContent = document.getElementById('uploadContent');
+
+            const url = URL.createObjectURL(file);
+            preview.src = url;
+            fileName.textContent = file.name;
+            
+            uploadContent.style.display = 'none';
+            container.style.display = 'block';
+        }
+
+        function showThumbnailPreview(file) {
+            const preview = document.getElementById('thumbnailPreview');
+            const container = document.getElementById('thumbnailPreviewContainer');
+            const uploadContent = document.getElementById('thumbnailUploadContent');
+
+            const url = URL.createObjectURL(file);
+            preview.src = url;
+            
+            uploadContent.style.display = 'none';
+            container.style.display = 'block';
+        }
+
+        function uploadVideoToStorage(file) {
+            console.log('Upload başlıyor:', file.name, file.size);
+            
+            const fileName = `videos/${Date.now()}_${file.name}`;
+            const storageRef = storage.ref(fileName);
+            const uploadTask = storageRef.put(file);
+
+            document.getElementById('uploadProgress').style.display = 'block';
+
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log('Upload progress:', progress + '%');
+                    
+                    document.getElementById('progressBar').style.width = progress + '%';
+                    document.getElementById('progressPercent').textContent = Math.round(progress) + '%';
+                    
+                    switch (snapshot.state) {
+                        case firebase.storage.TaskState.PAUSED:
+                            document.getElementById('uploadStatus').textContent = 'Yükleme duraklatıldı';
+                            console.log('Upload paused');
+                            break;
+                        case firebase.storage.TaskState.RUNNING:
+                            document.getElementById('uploadStatus').textContent = 'Dosya yükleniyor...';
+                            console.log('Upload running');
+                            break;
+                    }
+                },
+                (error) => {
+                    console.error('Upload error:', error);
+                    console.error('Error code:', error.code);
+                    console.error('Error message:', error.message);
+                    
+                    let errorMessage = 'Video yüklenirken hata oluştu!';
+                    
+                    switch(error.code) {
+                        case 'storage/unauthorized':
+                            errorMessage = 'Yetkilendirme hatası! Firebase Storage rules kontrol edin.';
+                            break;
+                        case 'storage/canceled':
+                            errorMessage = 'Yükleme iptal edildi!';
+                            break;
+                        case 'storage/unknown':
+                            errorMessage = 'Bilinmeyen hata! İnternet bağlantınızı kontrol edin.';
+                            break;
+                        case 'storage/retry-limit-exceeded':
+                            errorMessage = 'Yükleme zaman aşımı! Tekrar deneyin.';
+                            break;
+                        case 'storage/invalid-checksum':
+                            errorMessage = 'Dosya bozuk! Başka dosya deneyin.';
+                            break;
+                    }
+                    
+                    showNotification('❌ ' + errorMessage, 'error');
+                    resetVideoUpload();
+                },
+                () => {
+                    console.log('Upload completed successfully');
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        console.log('Download URL:', downloadURL);
+                        uploadedVideoUrl = downloadURL;
+                        document.getElementById('uploadStatus').textContent = 'Video başarıyla yüklendi! ✅';
+                        showNotification('✅ Video başarıyla yüklendi!', 'success');
+                    }).catch((error) => {
+                        console.error('Get download URL error:', error);
+                        showNotification('❌ Video URL alınamadı!', 'error');
+                    });
+                }
+            );
+        }
+
+        function uploadThumbnailToStorage(file) {
+            const fileName = `thumbnails/${Date.now()}_${file.name}`;
+            const storageRef = storage.ref(fileName);
+            const uploadTask = storageRef.put(file);
+
+            uploadTask.then((snapshot) => {
+                return snapshot.ref.getDownloadURL();
+            }).then((downloadURL) => {
+                uploadedThumbnailUrl = downloadURL;
+                document.querySelector('input[name="thumbnail"]').value = downloadURL;
+                showNotification('✅ Kapak resmi yüklendi!', 'success');
+            }).catch((error) => {
+                showNotification('❌ Kapak resmi yüklenirken hata oluştu!', 'error');
+                console.error(error);
+            });
+        }
+
+        function removeVideoFile() {
+            resetVideoUpload();
+            uploadedVideoUrl = null;
+        }
+
+        function removeThumbnailFile() {
+            document.getElementById('thumbnailPreviewContainer').style.display = 'none';
+            document.getElementById('thumbnailUploadContent').style.display = 'block';
+            document.getElementById('thumbnailFile').value = '';
+            document.querySelector('input[name="thumbnail"]').value = '';
+            uploadedThumbnailUrl = null;
+        }
+
+        function resetVideoUpload() {
+            document.getElementById('uploadProgress').style.display = 'none';
+            document.getElementById('videoPreviewContainer').style.display = 'none';
+            document.getElementById('uploadContent').style.display = 'block';
+            document.getElementById('videoFile').value = '';
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('progressPercent').textContent = '0%';
+        }
+
+        // ===== DRAG & DROP =====
+        const uploadArea = document.getElementById('videoUploadArea');
+
+        uploadArea?.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+
+        uploadArea?.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+
+        uploadArea?.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('video/')) {
+                    document.getElementById('videoFile').files = files;
+                    handleVideoFile(document.getElementById('videoFile'));
+                } else {
+                    showNotification('❌ Lütfen video dosyası sürükleyin!', 'error');
+                }
+            }
+        });
+
+        // ===== FIREBASE OPERATIONS =====
+        function loadVideos() {
+            database.ref('videos').on('value', (snapshot) => {
+                videosData = snapshot.val() || {};
+                updateUI();
+                updateStats();
+                updateChart();
+            });
+        }
+
+        function addVideo(videoData) {
+            const videoRef = database.ref('videos').push();
+            const videoWithId = {
+                ...videoData,
+                id: videoRef.key,
+                createdAt: firebase.database.ServerValue.TIMESTAMP,
+                views: 0,
+                likes: 0,
+                author: currentUser.name
+            };
+            
+            return videoRef.set(videoWithId).then(() => {
+                showNotification('✅ Video başarıyla eklendi!', 'success');
+                
+                database.ref('activities').push({
+                    type: 'video_added',
+                    message: `Yeni video eklendi: "${videoData.title}"`,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    user: currentUser.name
+                });
+            }).catch((error) => {
+                showNotification('❌ Video eklenirken hata oluştu!', 'error');
+                console.error(error);
+            });
+        }
+
+        function deleteVideo(videoId) {
+            if (confirm('Bu videoyu silmek istediğinizden emin misiniz?')) {
+                const video = videosData[videoId];
+                
+                database.ref(`videos/${videoId}`).remove().then(() => {
+                    showNotification('🗑️ Video silindi!', 'success');
+                    
+                    database.ref('activities').push({
+                        type: 'video_deleted',
+                        message: `Video silindi: "${video?.title || 'Bilinmeyen'}"`,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP,
+                        user: currentUser.name
+                    });
+                }).catch((error) => {
+                    showNotification('❌ Video silinirken hata oluştu!', 'error');
+                    console.error(error);
+                });
+            }
+        }
+
+        // ===== UI UPDATES =====
+        function updateUI() {
+            const tbody = document.getElementById('videosTableBody');
+            tbody.innerHTML = '';
+
+            Object.entries(videosData).forEach(([id, video]) => {
+                const row = createVideoRow(id, video);
+                tbody.appendChild(row);
+            });
+        }
+
+        function createVideoRow(id, video) {
+            const tr = document.createElement('tr');
+            tr.className = 'table-row';
+            
+            tr.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                        <div class="w-16 h-12 bg-gradient-to-br from-netflix to-netflix-dark rounded-lg flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.01M15 10h1.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium text-white">${video.title}</div>
+                            <div class="text-sm text-gray-400">${video.duration || 'N/A'}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${getCategoryColor(video.category)}">${getCategoryName(video.category)}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${(video.views || 0).toLocaleString()}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatDate(video.createdAt)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                    <button onclick="editVideo('${id}')" class="action-btn text-blue-400 hover:text-blue-300">✏️ Düzenle</button>
+                    <button onclick="deleteVideo('${id}')" class="action-btn text-red-400 hover:text-red-300">🗑️ Sil</button>
+                </td>
+            `;
+            
+            return tr;
+        }
+
+        function updateStats() {
+            const videos = Object.values(videosData);
+            const totalVideos = videos.length;
+            const totalViews = videos.reduce((sum, video) => sum + (video.views || 0), 0);
+            const featuredCount = videos.filter(video => video.featured).length;
+            
+            document.getElementById('totalVideosCount').textContent = totalVideos;
+            document.getElementById('totalViewsCount').textContent = totalViews.toLocaleString();
+            document.getElementById('featuredVideosCount').textContent = featuredCount;
+            document.getElementById('lastUpdateTime').textContent = new Date().toLocaleTimeString('tr-TR');
+        }
+
+        function updateChart() {
+            const videos = Object.values(videosData);
+            const categories = {};
+            
+            videos.forEach(video => {
+                categories[video.category] = (categories[video.category] || 0) + 1;
+            });
+
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            
+            if (window.categoryChartInstance) {
+                window.categoryChartInstance.destroy();
+            }
+            
+            window.categoryChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(categories).map(cat => getCategoryName(cat)),
+                    datasets: [{
+                        data: Object.values(categories),
+                        backgroundColor: ['#E50914', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { labels: { color: 'white' } }
+                    }
+                }
+            });
+        }
+
+        // ===== SECTION MANAGEMENT =====
+        function showSection(sectionName) {
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            document.getElementById(sectionName).style.display = 'block';
+            
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            const titles = {
+                dashboard: { title: 'Dashboard', subtitle: 'Platform istatistikleri ve canlı veriler' },
+                videos: { title: 'Video Yönetimi', subtitle: 'Videoları ekle, düzenle ve yönet' },
+                moderators: { title: 'Moderatör Yönetimi', subtitle: 'Moderatörleri görüntüle ve yönet' },
+                comments: { title: 'Yorum Yönetimi', subtitle: 'Yorumları modere et' },
+                analytics: { title: 'Analitik Raporları', subtitle: 'Detaylı istatistikler ve raporlar' },
+                settings: { title: 'Sistem Ayarları', subtitle: 'Platform ayarlarını yapılandır' }
+            };
+            
+            if (titles[sectionName]) {
+                document.getElementById('pageTitle').textContent = titles[sectionName].title;
+                document.getElementById('pageSubtitle').textContent = titles[sectionName].subtitle;
+            }
+
+            switch(sectionName) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'videos':
+                    loadVideos();
+                    break;
+            }
+        }
+
+        function loadDashboard() {
+            updateStats();
+            updateChart();
+        }
+
+        // ===== MODAL FUNCTIONS =====
+        function openAddVideoModal() {
+            document.getElementById('addVideoModal').classList.remove('hidden');
+            document.getElementById('addVideoModal').classList.add('flex');
+            
+            document.getElementById('addVideoForm').reset();
+            resetVideoUpload();
+            removeThumbnailFile();
+            uploadedVideoUrl = null;
+            uploadedThumbnailUrl = null;
+            
+            document.getElementById('featuredToggle').classList.remove('active');
+            document.getElementById('premiumToggle').classList.remove('active');
+            document.getElementById('featuredInput').value = 'false';
+            document.getElementById('premiumInput').value = 'false';
+            
+            switchVideoSource('url');
+        }
+
+        function closeAddVideoModal() {
+            document.getElementById('addVideoModal').classList.add('hidden');
+            document.getElementById('addVideoModal').classList.remove('flex');
+        }
+
+        // ===== FORM SUBMISSION =====
+        document.getElementById('addVideoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '⏳ Ekleniyor...';
+            submitBtn.disabled = true;
+
+            try {
+                const formData = new FormData(e.target);
+                
+                let videoUrl = formData.get('videoUrl');
+                if (!videoUrl && uploadedVideoUrl) {
+                    videoUrl = uploadedVideoUrl;
+                }
+                
+                if (!videoUrl) {
+                    throw new Error('Video URL veya dosyası gerekli!');
+                }
+
+                const videoData = {
+                    title: formData.get('title'),
+                    description: formData.get('description'),
+                    category: formData.get('category'),
+                    videoUrl: videoUrl,
+                    thumbnail: uploadedThumbnailUrl || formData.get('thumbnail') || `https://picsum.photos/400/300?random=${Date.now()}`,
+                    duration: formData.get('duration'),
+                    featured: formData.get('featured') === 'true',
+                    premium: formData.get('premium') === 'true',
+                    tags: formData.get('tags') || '',
+                    status: 'active'
+                };
+                
+                await addVideo(videoData);
+                closeAddVideoModal();
+                
+            } catch (error) {
+                showNotification('❌ ' + error.message, 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // ===== UTILITY FUNCTIONS =====
+        function getCategoryName(category) {
+            const names = {
+                technology: 'Teknoloji',
+                education: 'Eğitim',
+                entertainment: 'Eğlence',
+                music: 'Müzik',
+                sports: 'Spor',
+                lifestyle: 'Yaşam',
+                cooking: 'Yemek',
+                travel: 'Seyahat'
+            };
+            return names[category] || category;
+        }
+
+        function getCategoryColor(category) {
+            const colors = {
+                technology: 'bg-blue-100 text-blue-800',
+                education: 'bg-green-100 text-green-800',
+                entertainment: 'bg-purple-100 text-purple-800',
+                music: 'bg-yellow-100 text-yellow-800',
+                sports: 'bg-red-100 text-red-800',
+                lifestyle: 'bg-pink-100 text-pink-800',
+                cooking: 'bg-orange-100 text-orange-800',
+                travel: 'bg-indigo-100 text-indigo-800'
+            };
+            return colors[category] || 'bg-gray-100 text-gray-800';
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return '-';
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('tr-TR');
+        }
+
+        function editVideo(id) {
+            showNotification(`📝 Video düzenleme özelliği yakında eklenecek...`, 'info');
+        }
+
+        function filterVideos() {
+            // Video filtreleme logic
+        }
+
+        function searchVideos() {
+            // Video arama logic
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.add('translate-x-0');
+                overlay.classList.remove('hidden');
+                overlay.classList.add('block');
+                overlay.onclick = closeSidebar;
+            } else {
+                closeSidebar();
+            }
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            sidebar.classList.remove('translate-x-0');
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.remove('block');
+            overlay.classList.add('hidden');
+            overlay.onclick = null;
+        }
+
+        function showNotification(message, type = 'success') {
+            const colors = {
+                success: 'from-green-500 to-green-600',
+                error: 'from-red-500 to-red-600',
+                info: 'from-blue-500 to-blue-600'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 bg-gradient-to-r ${colors[type]} text-white px-6 py-4 rounded-lg shadow-xl z-50 slide-in`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+        // Firebase bağlantı testi
+        function testFirebaseConnection() {
+            console.log('Firebase testing...');
+            
+            try {
+                const testRef = storage.ref('test/connection.txt');
+                console.log('Storage ref created successfully');
+                
+                const testBlob = new Blob(['test'], { type: 'text/plain' });
+                testRef.put(testBlob).then(() => {
+                    console.log('✅ Test upload successful - Firebase Storage çalışıyor!');
+                }).catch((error) => {
+                    console.error('❌ Test upload failed:', error);
+                });
+                
+            } catch (error) {
+                console.error('Firebase Storage connection failed:', error);
+            }
+        }
+
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('loginScreen').classList.remove('hidden');
+                testFirebaseConnection();
+            }, 1000);
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeAddVideoModal();
+                closeSidebar();
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.sidebar-item') && window.innerWidth < 1024) {
+                setTimeout(closeSidebar, 100);
+            }
+        });
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 1024) {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('mobileOverlay');
+                
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.add('translate-x-0');
+                overlay.classList.remove('block');
+                overlay.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
